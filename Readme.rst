@@ -13,14 +13,14 @@ Parametrize program
 ===================
 
 Almost all complex program has some control parameters. 
-It could be path to file to data to proceed, error reporting level, save location, used metrics and many other. 
+It could be path to file with data to proceed, error reporting level, save location, used metrics and other. 
 
 If such parameters are hardcoded in code of program, then may be hard to use it on another machine, 
-or share code top be used by other people. 
+or share code with other people. 
 
-Using global level variables, which provide one place to edit which simplify this  
-but still not solve problem with synchronistation between machines, 
-especially when using ``git`` or other automated solution.
+Even simplify update it by put all control variables in one place does not solve this problem. 
+When synchronize code between machines user need to remember to update variables to local values. 
+This is really annoying when using automated systems like ``git`` or even *Dropbox*
 
 Current computers allow execute more than one process at the same time. 
 Often case is to run same analysis against different files or parameters. 
