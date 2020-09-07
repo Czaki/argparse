@@ -15,51 +15,183 @@ Parametrize program
 Almost all complex program has some control parameters. 
 It could be path to file with data to proceed, error reporting level, save location, used metrics and other. 
 
+Lets take such simple program which copy first ``count_lines`` from one file to second.
+
+.. code-block:: python
+
+   def copy_lines(input_file, result_file, count_lines):
+      with open(input_file, 'r') as r_f, open(result_file, 'w') as w_f:
+         for _ in range(count_lines):
+               w_f.write(r_f.readline())
+
+   copy_lines("data/input.txt", "result/result.txt", 10)
+
+From shell it could be called this way:
+
+.. code-block:: bash 
+
+   python copy_script.py
+
 If such parameters are hardcoded in code of program, then may be hard to use it on another machine, 
 or share code with other people. 
 
 Even simplify update it by put all control variables in one place does not solve this problem. 
 When synchronize code between machines user need to remember to update variables to local values. 
-This is really annoying when using automated systems like ``git`` or even *Dropbox*
+Especially this may introduce redundant work when using automated systems like ``git`` or even *Dropbox*
 
 Current computers allow execute more than one process at the same time. 
 Often case is to run same analysis against different files or parameters. 
 In some programing language like C, C++ or Java each update of code require recompilation of code to 
-make changes available in executable. This process may tke long time. 
+make changes available in executable. This process may take long time. 
 
 
 Because of above mentioned limitations there is need to easy provide program parameters outside the code. 
 Here there are described two options to solve this: *configuration file* and *command line arguments*. 
 
+configuration file
+~~~~~~~~~~~~~~~~~~
+
 *configuration file* is structured file which contains mapping from name to value. 
-One of basic format is ``.ini``
+One of basic format is ``.ini``. Example of simple ``.ini`` file bellow:
 
 .. code-block:: ini
 
    [default]
-   input="data/input"
-   num=10
-   result="result/result.txt"
+   input_file="data/input.txt"
+   count_lines=10
+   result_file="result/result.txt"
 
-This is simple, limited but human readable format. Its contains section marked by square braces (``[]``). 
-And mapping *name* to *value*, where name need to be unique per each section. 
-Python library to parse and create this file format is ``configparser``.
+   [windows]
+   input_file="data\input.txt"
+   result_file="result\result.txt"
+
+This is simple, limited but human readable format. Its contains at least one 
+section which header is marked by square braces (``[]``), in example there are two sections. 
+Content of section is mapping *name* to *value*, where name need to be unique per each section. 
+Python library which allow to parse and create this file format is ``configparser``.
+
+Same program as above with ``configparse``
+
+.. code-block:: python
+
+   import configparser
+   import os
+
+   dir_name = os.path.dirname(__file__)
+
+   config = configparser.ConfigParser()
+   config.read(os.path.join(dir_name, "sample_config.ini"))
+
+   def copy_lines(input_file, result_file, count_lines):
+      with open(input_file, 'r') as r_f, open(result_file, 'w') as w_f:
+         for _ in range(count_lines):
+               w_f.write(r_f.readline())
+
+   copy_lines(
+      config["default"]["input_file"],
+      config["default"]["result_file"],
+      config["default"]["count_lines"]
+   )
+
+
+it is possible to make some parameter optional in file using ``get`` function. 
+Below parameter ``count_lines`` is optional with default variable ``10``:
+
+.. code-block:: python
+
+   import configparser
+   import os
+
+   dir_name = os.path.dirname(__file__)
+
+   config = configparser.ConfigParser()
+   config.read(os.path.join(dir_name, "sample_config.ini"))
+
+   def copy_lines(input_file, result_file, count_lines):
+      with open(input_file, 'r') as r_f, open(result_file, 'w') as w_f:
+         for _ in range(count_lines):
+               w_f.write(r_f.readline())
+
+   copy_lines(
+      config["default"]["input_file"],
+      config["default"]["result_file"],
+      config["default"]["count_lines"].get(10)
+   )
+
 
 When more complex structures need to be handled there are more robust format like ``json`` or ``xml``.
 
-
+command line arguments
+~~~~~~~~~~~~~~~~~~~~~~
 Second option are *command line arguments* which where already mentioned on **Shell** classes.
+This method provide user friendly interface if user need only few parameters. 
+But it is not an optimal solution if user need to provide dozen or more parameters. 
 They allow simple and fast change value for few parameters but 
-provide dozen of parameters need long and hard to read line in shell. 
+provide dozen of parameters need long and harder to read line in shell. 
 
-In python they are accessible by ``argv`` from ``sys`` library. 
+In Python they are accessible by ``argv`` from ``sys`` library.
+This code show show same example program but with parameters read from argv:
 
 .. code-block:: python
     
-    import sys
+   import sys
 
-    print(sys.argv)
+   def copy_lines(input_file, result_file, count_lines):
+      with open(input_file, 'r') as r_f, open(result_file, 'w') as w_f:
+         for _ in range(count_lines):
+               w_f.write(r_f.readline())
 
+   copy_lines(sys.argv[1], sys.argv[2], sys.argv[3])
+
+To make ``count_lines`` optional there is need to check length of list ``sys.argv``. 
+
+.. code-block:: python
+   
+   import sys
+
+   def copy_lines(input_file, result_file, count_lines):
+      with open(input_file, 'r') as r_f, open(result_file, 'w') as w_f:
+         for _ in range(count_lines):
+               w_f.write(r_f.readline())
+
+   copy_lines(
+      sys.argv[1],
+      sys.argv[2],
+      sys.argv[3] if len(sys.argv) == 4 else 10
+   )
+
+In contradiction to earlier examples its calls from shell will look like:
+
+.. code-block:: bash 
+
+   python copy_script.py "data/input.txt" "result/result.txt" 10
+
+The common case of program is to have only few mandatory parameters but many optionals. 
+For example this program could be extended with options to copy last lines, every second lines etc. 
+It could be control in approach shown during **Shell** class using flag like ``--tail`` or ``--every-second``.
+
+Base library for parse ``argv`` variable content is ``argparse``. Using this library out program will look:
+
+.. code-block:: python
+
+   import argparse
+
+   parser = argparse.ArgumentParser()
+   parser.add_argument("input_file")
+   parser.add_argument("result_file")
+   parser.add_argument("count_lines")
+
+   args = parser.parse_args()
+
+   def copy_lines(input_file, result_file, count_lines):
+      with open(input_file, 'r') as r_f, open(result_file, 'w') as w_f:
+         for _ in range(count_lines):
+               w_f.write(r_f.readline())
+
+   copy_lines(args.input_file, args.result_file, args.count_lines)
+
+
+If program have multiple parameters, especially optionals then
 Writing manual parser for program with multiple optional parameters is time consuming and it is easy to make a mistake. 
 (see ``sample_code/simple_cli.py`` vs ``sample_code/argparse_reference.py``).
 Default Python library to do this is ``argparse``
