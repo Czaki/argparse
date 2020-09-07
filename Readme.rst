@@ -1,6 +1,6 @@
-********
-Argparse
-********
+********************
+Parametrize programs
+********************
 
 .. sectnum::
    :depth: 2
@@ -9,26 +9,49 @@ Argparse
    :depth: 2
 
 
-Command line interface
-======================
+Parametrize program
+===================
 
-Write code which has hardcoded all parameters in code may make hard to use it on another machine, 
+Almost all complex program has some control parameters. 
+It could be path to file to data to proceed, error reporting level, save location, used metrics and many other. 
+
+If such parameters are hardcoded in code of program, then may be hard to use it on another machine, 
 or share code top be used by other people. 
 
-First way to do this is to extract values to global level variables, which provide one place to edit 
-all values, but also it may create problem with synchronistation between machines.  
+Using global level variables, which provide one place to edit which simplify this  
+but still not solve problem with synchronistation between machines, 
+especially when using ``git`` or other automated solution.
 
-If program have binary form (Python code could be converted to binary executable for example with ``Pyinstaller``).
-then each update force to rebuild whole project. 
+Current computers allow execute more than one process at the same time. 
+Often case is to run same analysis against different files or parameters. 
+In some programing language like C, C++ or Java each update of code require recompilation of code to 
+make changes available in executable. This process may tke long time. 
 
-Because of mentioned limitations there is need to easy provide program parameters outside the code. 
-There are two options: *configuration file* and *command line arguments*. 
 
-For *configuration file* most popular format for basic one is ``.ini`` format. 
-Python library to work with such file is ``configparser``. 
-There are more formats, which may handle more complex formats, like ``json``. 
+Because of above mentioned limitations there is need to easy provide program parameters outside the code. 
+Here there are described two options to solve this: *configuration file* and *command line arguments*. 
 
-Other option are *command line* arguments which where mentioned on **Shell** classes.
+*configuration file* is structured file which contains mapping from name to value. 
+One of basic format is ``.ini``
+
+.. code-block:: ini
+
+   [default]
+   input="data/input"
+   num=10
+   result="result/result.txt"
+
+This is simple, limited but human readable format. Its contains section marked by square braces (``[]``). 
+And mapping *name* to *value*, where name need to be unique per each section. 
+Python library to parse and create this file format is ``configparser``.
+
+When more complex structures need to be handled there are more robust format like ``json`` or ``xml``.
+
+
+Second option are *command line arguments* which where already mentioned on **Shell** classes.
+They allow simple and fast change value for few parameters but 
+provide dozen of parameters need long and hard to read line in shell. 
+
 In python they are accessible by ``argv`` from ``sys`` library. 
 
 .. code-block:: python
@@ -37,8 +60,9 @@ In python they are accessible by ``argv`` from ``sys`` library.
 
     print(sys.argv)
 
-But instead of manual parsing, especially in case of multiple optional parameters, 
-it is nicer to use library which hide all this logic for Python such library is ``argparse``.
+Writing manual parser for program with multiple optional parameters is time consuming and it is easy to make a mistake. 
+(see ``sample_code/simple_cli.py`` vs ``sample_code/argparse_reference.py``).
+Default Python library to do this is ``argparse``
 
 Both approach could be used mixed.
 
