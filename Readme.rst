@@ -30,7 +30,7 @@ From shell it could be called this way:
 
 .. code-block:: bash 
 
-   python copy_script.py
+   $ python copy_script.py
 
 If such parameters are hardcoded in code of program, then may be hard to use it on another machine, 
 or share code with other people. 
@@ -115,7 +115,7 @@ Below parameter ``count_lines`` is optional with default variable ``10``:
    copy_lines(
       config["default"]["input_file"],
       config["default"]["result_file"],
-      config["default"]["count_lines"].get(10)
+      config["default"].get("count_lines", 10)
    )
 
 
@@ -164,7 +164,7 @@ In contradiction to earlier examples its calls from shell will look like:
 
 .. code-block:: bash 
 
-   python copy_script.py "data/input.txt" "result/result.txt" 10
+   $ python copy_script.py "data/input.txt" "result/result.txt" 10
 
 The common case of program is to have only few mandatory parameters but many optionals. 
 For example this program could be extended with options to copy last lines, every second lines etc. 
@@ -190,6 +190,36 @@ Base library for parse ``argv`` variable content is ``argparse``. Using this lib
 
    copy_lines(args.input_file, args.result_file, args.count_lines)
 
+As could be seen from comparing above example, if program has only positional parameters 
+the code which use ``argv`` variable is shorter. But usage of ``argparse`` has multiple benefits:
+
+* type checking - ``add_argument`` has optional argument ``type`` which takes function to convert provided string to chosen type
+* help text - argparse automatically generate help string which could be used to remind parameter
+
+.. code-block:: python
+
+   import argparse
+
+   parser = argparse.ArgumentParser()
+   parser.add_argument("input_file", help="file to be read")
+   parser.add_argument("result_file", help="file to save result")
+   parser.add_argument(
+      "count_lines", type=int, default=10, nargs="?", help="Number of lines to be copied, default 10"
+   )
+   parser.add_argument(
+      "--append", action="store_const", const="a", default="w", help="append result to `result_file`", dest="append"
+   )
+
+   args = parser.parse_args()
+
+   def copy_lines(input_file, result_file, count_lines, write_mode):
+      with open(input_file, 'r') as r_f, open(result_file, write_mode) as w_f:
+         for _ in range(count_lines):
+               w_f.write(r_f.readline())
+
+   copy_lines(args.input_file, args.result_file, args.count_lines, args.append)
+
+``argparse``
 
 If program have multiple parameters, especially optionals then
 Writing manual parser for program with multiple optional parameters is time consuming and it is easy to make a mistake. 
@@ -222,12 +252,16 @@ Create program which take as argument one existing file, one integer number and 
 
 program should print values of ``input``, ``num`` and ``output`` on standard output
 
-
 Exercise 2
+~~~~~~~~~~
+Write own ``type`` checking function which will check if file ``input`` exists and if not then raise proper exception
+See: https://docs.python.org/3/library/argparse.html#type
+
+Exercise 3
 ~~~~~~~~~~
 Modify code from exercise 1 to read default values from config file ``sample_code/sample_config.ini``
 
 
-Exercise 3
+Exercise 4
 ~~~~~~~~~~
 Modify code from exercise 2 to have optional argument with path to config file and read default values from this config file.

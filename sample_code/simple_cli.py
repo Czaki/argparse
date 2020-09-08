@@ -19,7 +19,7 @@ optional arguments:
 def print_help():
     print(help_string.format(sys.argv[0]))
 
-def pare_arguments():
+def parse_arguments():
     args = sys.argv[1:]
     if "-h" in args or "--help" in args:
         print_help()
