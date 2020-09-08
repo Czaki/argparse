@@ -264,4 +264,4 @@ Modify code from exercise 1 to read default values from config file ``sample_cod
 
 Exercise 4
 ~~~~~~~~~~
-Modify code from exercise 2 to have optional argument with path to config file and read default values from this config file.
+Modify code from exercise 3 to have optional argument with path to config file and read default values from this config file.
