@@ -231,6 +231,14 @@ Both approach could be used mixed.
 
 Documentation https://docs.python.org/3/library/argparse.html and https://docs.python.org/3/library/configparser.html
 
+For multiple version of optional argument
+
+.. code-block:: python
+
+    parser.add_argument(
+          "-a", "--append", action="store_const", const="a", default="w", help="append result to `result_file`"
+       )
+
 
 Exercises
 =========
@@ -245,10 +253,10 @@ Create program which take as argument one existing file, one integer number and 
    Usage: exercise_1.py [-h] [-i,--input INPUT] [-n,--num NUM] [-o,--output OUTPUT]
 
    optional arguments:
-   -h, --help          show this help message and exit
-   -i,--input INPUT
-   -n,--num NUM
-   -o,--output OUTPUT
+   -h, --help            show this help message and exit
+   -i INPUT, --input INPUT
+   -n NUM, --num NUM
+   -o OUTPUT, --output OUTPUT
 
 program should print values of ``input``, ``num`` and ``output`` on standard output
 
